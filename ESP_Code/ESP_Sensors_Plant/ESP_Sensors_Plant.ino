@@ -4,6 +4,7 @@
 #define DHTPIN 4
 #define DHTTYPE DHT11
 #define LDR_AO_PIN 2
+#define SMPIN 5
 
 #ifndef STASSID
 #define STASSID "Lolz"
@@ -25,12 +26,13 @@ void setup() {
   dht.begin();
 }
 
+
 float dhtData(DHT dht){
   float h = dht.readHumidity();
   // Read temperature as Celsius
   float t = dht.readTemperature();
-  Serial.print("hum:");
-  Serial.println(h);
+  Serial.println("hum:");
+  Serial.print(h);
   Serial.println("tep:");
   Serial.print(t);
 
