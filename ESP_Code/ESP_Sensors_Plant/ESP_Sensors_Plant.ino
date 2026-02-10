@@ -1,10 +1,15 @@
+#include <ArduinoJson.h>
+#include <ArduinoJson.hpp>
+
 #include <DHT.h>
 #include <WiFi.h>
+
 
 #define DHTPIN 4
 #define DHTTYPE DHT11
 #define LDR_AO_PIN 2
 #define SMPIN 5
+#define DRY 1000
 
 #ifndef STASSID
 #define STASSID "Lolz"
@@ -24,19 +29,6 @@ void setup() {
   connectWIFI(ssid, password); // add password when working with Lolz
   Serial.println("TESTY BESTY:");
   dht.begin();
-}
-
-
-float dhtData(DHT dht){
-  float h = dht.readHumidity();
-  // Read temperature as Celsius
-  float t = dht.readTemperature();
-  Serial.println("hum:");
-  Serial.print(h);
-  Serial.println("tep:");
-  Serial.print(t);
-
-  return t, h;
 }
 
 void connectWIFI(const char* ssid, const char* pass){ //add pass when working with Lolz
@@ -118,6 +110,25 @@ void scan()
     Serial.println("");
 }
 
+struct daa{
+  float h;
+  float t;
+};
+
+struct daa dhtData(DHT dht){
+  struct daa lol;
+  lol.h = dht.readHumidity();
+  // Read temperature as Celsius
+  lol.t = dht.readTemperature();
+  Serial.print("hum:");
+  Serial.println(lol.h);
+  Serial.print("tep:");
+  Serial.println(lol.t);
+
+
+  return lol;
+}
+
 float lightData(int AO_PIN){
   float lVal = analogRead(AO_PIN);
   Serial.print("Light val = ");
@@ -126,9 +137,36 @@ float lightData(int AO_PIN){
   return lVal;
 }
 
+float sm(int AO_PIN){
+  float smVal = analogRead(AO_PIN);
+
+  return smVal;
+}
+
+char* smDetermine(int AO_PIN, float THRESHHOLD){
+    float smVal = sm(AO_PIN);
+    if (smVal > THRESHHOLD){
+        char* smFeel = "DRY";
+        Serial.print("Soil is ");
+        Serial.println(smFeel);
+        return smFeel;
+    }
+    else{
+        char* smFeel = "WET";
+        Serial.print("Soil is ");
+        Serial.println(smFeel);
+        return smFeel;
+    }
+
+    Serial.println(smVal);
+}
+
 void loop() {
   // put your main code here, to run repeatedly:
   delay(2000); // this speeds up the simulation
-  dhtData(dht);
-  lightData(LDR_AO_PIN);
+  struct daa lol;
+  lol = dhtData(dht);
+  float litVal = lightData(LDR_AO_PIN);
+  float smval = sm(SMPIN);
+  char* smfeel = smDetermine(SMPIN,DRY);
 }
