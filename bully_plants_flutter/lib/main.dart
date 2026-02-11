@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 
 
 import 'screens/home_screen.dart';
-import 'services/syncing.dart';
 import 'services/notifications.dart';
+import 'services/mqtt_service.dart'; 
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
 
   await NotificationService.init();
+  await MqttService().connect();
 
-  await SyncService.syncAll();
-
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

@@ -2,7 +2,7 @@ class Plant {
   final int? id;
   final String plantName;
 
-  // ✅ NEW: path to custom plant icon
+  // 
   final String iconPath;
 
   final int? perenualId;
@@ -19,7 +19,7 @@ class Plant {
   Plant({
     this.id,
     required this.plantName,
-    required this.iconPath, // ✅ REQUIRED
+    required this.iconPath, // 
 
     this.perenualId,
     this.minTemperature,
@@ -39,7 +39,7 @@ class Plant {
       'id': id,
       'plant_name': plantName,
 
-      // ✅ SAVE ICON
+      //
       'icon_path': iconPath,
 
       'perenual_id': perenualId,
@@ -61,7 +61,7 @@ class Plant {
       id: map['id'] as int?,
       plantName: map['plant_name'] as String,
 
-      // ✅ LOAD ICON
+  
       iconPath: map['icon_path'] as String,
 
       perenualId: map['perenual_id'] as int?,
@@ -101,7 +101,7 @@ class Plant {
       id: id ?? this.id,
       plantName: plantName ?? this.plantName,
 
-      // ✅
+      // 
       iconPath: iconPath ?? this.iconPath,
 
       perenualId: perenualId ?? this.perenualId,
