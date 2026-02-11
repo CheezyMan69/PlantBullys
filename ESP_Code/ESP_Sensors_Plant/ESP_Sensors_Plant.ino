@@ -5,10 +5,10 @@
 #include <WiFi.h>
 
 
-#define DHTPIN 4
+#define DHTPIN 34
 #define DHTTYPE DHT11
-#define LDR_AO_PIN 2
-#define SMPIN 5
+#define LDR_AO_PIN 32
+#define SMPIN 36
 #define DRY 1000
 
 #ifndef STASSID
@@ -157,6 +157,8 @@ float lightData(int AO_PIN){
 
 float sm(int AO_PIN){
   float smVal = analogRead(AO_PIN);
+  Serial.print("Soil value: ");
+  Serial.println(smVal);
 
   return smVal;
 }
@@ -164,13 +166,13 @@ float sm(int AO_PIN){
 char* smDetermine(int AO_PIN, float THRESHHOLD){
     float smVal = sm(AO_PIN);
     if (smVal > THRESHHOLD){
-        char* smFeel = "DRY";
+        char* smFeel = "WET";
         Serial.print("Soil is ");
         Serial.println(smFeel);
         return smFeel;
     }
     else{
-        char* smFeel = "WET";
+        char* smFeel = "DRY";
         Serial.print("Soil is ");
         Serial.println(smFeel);
         return smFeel;
@@ -187,8 +189,9 @@ void loop() {
   struct daa lol;
   lol = dhtData(dht);
   float litVal = lightData(LDR_AO_PIN);
-  float smval = sm(SMPIN);
+  //float smval = sm(SMPIN);
   char* smfeel = smDetermine(SMPIN,DRY);
+  Serial.print("");
 
     if (millis() - lastPubTime > publishInterval){
         sendMQTT(lol,litVal,smfeel);
