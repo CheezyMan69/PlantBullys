@@ -222,13 +222,13 @@ void connectMQTT() {
 
 void sendMQTT(struct daa lol,float lVal,char* smFeel){
     StaticJsonDocument<200> middlefinger;
-    message["timestamp"] = millis();
-    message["temp"] = lol.t;
-    message["humidity"] = lol.h;
-    message["light"] = lVal;
-    message["soil moisture"] = smFeel;
+    middlefinger["timestamp"] = millis();
+    middlefinger["temp"] = lol.t;
+    middlefinger["humidity"] = lol.h;
+    middlefinger["light"] = lVal;
+    middlefinger["soil moisture"] = smFeel;
     char messageBuffer[512];
-    serializeJson(message, messageBuffer);
+    serializeJson(middlefinger, messageBuffer);
     
     mqtt.publish(publishTopic, messageBuffer);
 
