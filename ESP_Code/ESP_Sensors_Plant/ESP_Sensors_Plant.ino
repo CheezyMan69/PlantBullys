@@ -21,7 +21,7 @@ DHT dht(DHTPIN,DHTTYPE);
 const char* ssid = STASSID;
 const char* password = STAPSK;
 
-const char mqttBroker = "test.mosquitto.org";
+const char* mqttBroker = "test.mosquitto.org";
 const int mqttPort = 1883;
 const char mqttClient[] = "bingbong";
 
