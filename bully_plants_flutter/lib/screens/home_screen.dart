@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../database/models/plant.dart';
 import '../database/repositories/plant_repository.dart';
-import '../screens/detail_screen.dart';
+import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-
   const HomeScreen({super.key});
 
   @override
@@ -14,12 +13,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
 
-  late Future<List<Plant>> plants;
+  late Future<List<Plant>> _plantsFuture;
 
   @override
   void initState() {
     super.initState();
-    plants = PlantRepository().getAll();
+
+    // Load plants from SQLite
+    _plantsFuture = PlantRepository().getAll();
   }
 
   @override
@@ -27,21 +28,42 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
 
-      appBar: AppBar(title: const Text("My Plants 🌱")),
+      appBar: AppBar(
+        title: const Text("My Plants 🌱"),
+        centerTitle: true,
+      ),
 
-      body: FutureBuilder(
+      body: FutureBuilder<List<Plant>>(
 
-        future: plants,
+        future: _plantsFuture,
 
         builder: (context, snapshot) {
 
-          if (!snapshot.hasData) {
+          // Loading
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          final list = snapshot.data!;
+          // Error
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                "Error: ${snapshot.error}",
+              ),
+            );
+          }
+
+          // No data
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text("No plants added yet 🌱"),
+            );
+          }
+
+          final plants = snapshot.data!;
 
           return GridView.builder(
 
@@ -50,17 +72,19 @@ class _HomeScreenState extends State<HomeScreen> {
             gridDelegate:
                 const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: .8,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.85,
             ),
 
-            itemCount: list.length,
+            itemCount: plants.length,
 
-            itemBuilder: (context, i) {
+            itemBuilder: (context, index) {
 
-              final plant = list[i];
+              final plant = plants[index];
 
-              return GestureDetector(
-
+              return _PlantCard(
+                plant: plant,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -70,46 +94,81 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
-
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-
-                  child: Column(
-                    children: [
-
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.green[100],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.local_florist,
-                        size: 60,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ),
-
-
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Text(
-                          plant.plantName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
               );
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _PlantCard extends StatelessWidget {
+
+  final Plant plant;
+  final VoidCallback onTap;
+
+  const _PlantCard({
+    required this.plant,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+
+    return GestureDetector(
+
+      onTap: onTap,
+
+      child: Card(
+
+        elevation: 3,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+
+        child: Column(
+          children: [
+
+            // Plant icon
+            Expanded(
+              child: Container(
+                width: double.infinity,
+
+                decoration: BoxDecoration(
+                  color: Colors.green[100],
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                ),
+
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+
+                  child: Image.asset(
+                    plant.iconPath,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+
+            // Name
+            Padding(
+              padding: const EdgeInsets.all(10),
+
+              child: Text(
+                plant.plantName,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

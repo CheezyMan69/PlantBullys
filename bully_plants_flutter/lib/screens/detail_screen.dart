@@ -27,7 +27,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
     readings =
         SensorReadingRepository()
-            .getLastFiveDays(widget.plant.id);
+            .getLastFiveDays(widget.plant.id!);
   }
 
   @override

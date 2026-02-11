@@ -20,7 +20,7 @@ class SyncService {
     final repo = PlantRepository();
 
     for (var p in data) {
-      await repo.insert(Plant.fromJson(p));
+      await repo.insert(Plant.fromMap(p));
     }
   }
 
@@ -34,7 +34,7 @@ class SyncService {
     final repo = SensorReadingRepository();
 
     for (var r in data) {
-      await repo.insert(SensorReading.fromJson(r));
+      await repo.insert(SensorReading.fromMap(r));
     }
   }
 
