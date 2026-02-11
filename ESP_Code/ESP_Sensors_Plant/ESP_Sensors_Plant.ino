@@ -244,6 +244,6 @@ void sendMQTT(struct daa lol,float lVal,char* smFeel){
 void messageHandler(String &topic, String &payload){
     Serial.println("Received from MQTT");
     Serial.println("- topic " + topic);
-    Serial.println("- payload");
+    Serial.println("- payload " + payload);
     
 }
