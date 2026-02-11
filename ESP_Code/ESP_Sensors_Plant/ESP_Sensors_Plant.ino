@@ -1,14 +1,14 @@
 #include <ArduinoJson.h>
 #include <ArduinoJson.hpp>
-
+#include <MQTTClient.h>
 #include <DHT.h>
 #include <WiFi.h>
 
 
-#define DHTPIN 4
+#define DHTPIN 34
 #define DHTTYPE DHT11
-#define LDR_AO_PIN 2
-#define SMPIN 5
+#define LDR_AO_PIN 32
+#define SMPIN 36
 #define DRY 1000
 
 #ifndef STASSID
@@ -20,6 +20,22 @@ DHT dht(DHTPIN,DHTTYPE);
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
+
+const char* mqttBroker = "test.mosquitto.org";
+const int mqttPort = 1883;
+const char mqttClient[] = "bingbong";
+
+const char publishTopic[] = "bingbong/sdata";
+const char subscribeTopic[] = "bingbong/sdata";
+
+const int publishInterval = 5000;
+
+WiFiClient network;
+MQTTClient mqtt = MQTTClient(256);
+
+unsigned long lastPubTime = 0;
+
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -46,6 +62,8 @@ void connectWIFI(const char* ssid, const char* pass){ //add pass when working wi
   Serial.println(ssid);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+  
+  connectMQTT();
 }
 
 void scan()
@@ -139,6 +157,8 @@ float lightData(int AO_PIN){
 
 float sm(int AO_PIN){
   float smVal = analogRead(AO_PIN);
+  Serial.print("Soil value: ");
+  Serial.println(smVal);
 
   return smVal;
 }
@@ -146,13 +166,13 @@ float sm(int AO_PIN){
 char* smDetermine(int AO_PIN, float THRESHHOLD){
     float smVal = sm(AO_PIN);
     if (smVal > THRESHHOLD){
-        char* smFeel = "DRY";
+        char* smFeel = "WET";
         Serial.print("Soil is ");
         Serial.println(smFeel);
         return smFeel;
     }
     else{
-        char* smFeel = "WET";
+        char* smFeel = "DRY";
         Serial.print("Soil is ");
         Serial.println(smFeel);
         return smFeel;
@@ -162,11 +182,71 @@ char* smDetermine(int AO_PIN, float THRESHHOLD){
 }
 
 void loop() {
+    mqtt.loop();
+
   // put your main code here, to run repeatedly:
   delay(2000); // this speeds up the simulation
   struct daa lol;
   lol = dhtData(dht);
   float litVal = lightData(LDR_AO_PIN);
-  float smval = sm(SMPIN);
+  //float smval = sm(SMPIN);
   char* smfeel = smDetermine(SMPIN,DRY);
+  Serial.print("");
+
+    if (millis() - lastPubTime > publishInterval){
+        sendMQTT(lol,litVal,smfeel);
+        lastPubTime = millis();
+    }
 }
+
+void connectMQTT() {
+    mqtt.begin(mqttBroker,mqttPort, network);
+    // mqtt.onMessage(messageHandler);
+    Serial.print("Connecting to Broker");
+
+    while (!mqtt.connect(mqttClient)) {
+    Serial.print(".");
+    delay(100);
+    }
+    Serial.println();
+
+    if (!mqtt.connected()){
+      Serial.println("Broker timeout");
+    return;
+    }
+
+    // if (mqtt.subscribe(subscribeTopic))
+    //   Serial.print("Subscribed to the topic: ");
+    // else
+    //   Serial.print("Failed to subscribe to the topic: ");
+
+    // Serial.println(subscribeTopic);
+    // Serial.println("MQTT broker Connected!");
+}
+
+void sendMQTT(struct daa lol,float lVal,char* smFeel){
+    StaticJsonDocument<200> middlefinger;
+    middlefinger["timestamp"] = millis();
+    middlefinger["temp"] = lol.t;
+    middlefinger["humidity"] = lol.h;
+    middlefinger["light"] = lVal;
+    middlefinger["soil moisture"] = smFeel;
+    char messageBuffer[512];
+    serializeJson(middlefinger, messageBuffer);
+    
+    mqtt.publish(publishTopic, messageBuffer);
+
+    Serial.println("Sent to MQTT");
+    Serial.print("- topic:");
+    Serial.println(publishTopic);
+    Serial.print("- payload:");
+    Serial.println(messageBuffer);
+
+}
+
+// void messageHandler(String &topic, String &payload){
+//     Serial.println("Received from MQTT");
+//     Serial.println("- topic " + topic);
+//     Serial.println("- payload " + payload);
+    
+// }
