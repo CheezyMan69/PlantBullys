@@ -182,9 +182,9 @@ char* smDetermine(int AO_PIN, float THRESHHOLD){
 void loop() {
     mqtt.loop();
 
-    if (ms() - lastPubTime > publishInterval){
+    if (millis() - lastPubTime > publishInterval){
         sendMQTT();
-        lastPubTime = ms();
+        lastPubTime = millis();
     }
   // put your main code here, to run repeatedly:
   delay(2000); // this speeds up the simulation
@@ -222,7 +222,7 @@ void connectMQTT() {
 
 void sendMQTT(struct daa lol,float lVal,char* smFeel){
     middlefinger<200> message;
-    message["timestamp"] = ms();
+    message["timestamp"] = millis());
     message["temp"] = lol.t;
     message["humidity"] = lol.h;
     message["light"] = lVal;
