@@ -1,6 +1,6 @@
 #include <ArduinoJson.h>
 #include <ArduinoJson.hpp>
-
+#include <MQTTClient.h>
 #include <DHT.h>
 #include <WiFi.h>
 
@@ -20,6 +20,22 @@ DHT dht(DHTPIN,DHTTYPE);
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
+
+const char mqttBroker = "test.mosquitto.org";
+const int mqttPort = 1883;
+const char mqttClient[] = "bingbong";
+
+const char publishTopic[] = "bingbong/sdata";
+const char subscribeTopic[] = "bingbong/sdata";
+
+const int publishInterval = 5000;
+
+WiFiClient network;
+MQTTClient mqtt = MQTTClient(256);
+
+unsigned long lastPubTime = 0;
+
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -46,6 +62,8 @@ void connectWIFI(const char* ssid, const char* pass){ //add pass when working wi
   Serial.println(ssid);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+  
+  connectMQTT();
 }
 
 void scan()
@@ -162,6 +180,12 @@ char* smDetermine(int AO_PIN, float THRESHHOLD){
 }
 
 void loop() {
+    mqtt.loop();
+
+    if (ms() - lastPubTime > publishInterval){
+        sendMQTT();
+        lastPubTime = ms();
+    }
   // put your main code here, to run repeatedly:
   delay(2000); // this speeds up the simulation
   struct daa lol;
@@ -169,4 +193,56 @@ void loop() {
   float litVal = lightData(LDR_AO_PIN);
   float smval = sm(SMPIN);
   char* smfeel = smDetermine(SMPIN,DRY);
+}
+
+void connectMQTT() {
+    mqtt.begin(mqttBroker,mqttPort, network);
+    mqtt.onMessage(messageHandler);
+    Serial.print("Connecting to Broker");
+
+    while (!mqtt.connect(mqttClient)) {
+    Serial.print(".");
+    delay(100);
+    }
+    Serial.println();
+
+    if (!mqtt.connected()){
+      Serial.println("Broker timeout");
+    return;
+    }
+
+    if (mqtt.subscribe(subscribetopic))
+      Serial.print("Subscribed to the topic: ");
+    else
+      Serial.print("Failed to subscribe to the topic: ");
+
+    Serial.println(subscribeTopic);
+    Serial.println("MQTT broker Connected!");
+}
+
+void sendMQTT(struct daa lol,float lVal,char* smFeel){
+    middlefinger<200> message;
+    message["timestamp"] = ms();
+    message["temp"] = lol.t;
+    message["humidity"] = lol.h;
+    message["light"] = lVal;
+    message["soil moisture"] = smFeel;
+    char messageBuffer[512];
+    serializeJson(message, messageBuffer);
+    
+    mqtt.publish(publishTopic, messageBuffer);
+
+    Serial.println("Sent to MQTT");
+    Serial.print("- topic:");
+    Serial.println(publishTopic);
+    Serial.print("- payload:");
+    Serial.println(messageBuffer);
+
+}
+
+void messageHandler(String &topic, String &payload){
+    Serial.println("Received from MQTT");
+    Serial.println("- topic " + topic);
+    Serial.println("- payload");
+    
 }
