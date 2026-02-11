@@ -127,4 +127,20 @@ class SensorReadingRepository {
     }
     return {};
   }
+
+Future<List<SensorReading>> getLastFiveDays(int plantId) async {
+  final db = await _dbHelper.database;
+
+  final result = await db.rawQuery('''
+    SELECT *
+    FROM sensor_readings
+    WHERE plant_id = ?
+      AND recorded_at >= datetime('now', '-5 days')
+    ORDER BY recorded_at ASC
+  ''', [plantId]);
+
+  return result
+      .map((e) => SensorReading.fromMap(e))
+      .toList();
+}
 }
