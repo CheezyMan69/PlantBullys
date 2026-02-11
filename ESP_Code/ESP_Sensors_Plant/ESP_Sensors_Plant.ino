@@ -211,7 +211,7 @@ void connectMQTT() {
     return;
     }
 
-    if (mqtt.subscribe(subscribetopic))
+    if (mqtt.subscribe(subscribeTopic))
       Serial.print("Subscribed to the topic: ");
     else
       Serial.print("Failed to subscribe to the topic: ");
