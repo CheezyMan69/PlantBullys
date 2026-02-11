@@ -182,10 +182,6 @@ char* smDetermine(int AO_PIN, float THRESHHOLD){
 void loop() {
     mqtt.loop();
 
-    if (millis() - lastPubTime > publishInterval){
-        sendMQTT();
-        lastPubTime = millis();
-    }
   // put your main code here, to run repeatedly:
   delay(2000); // this speeds up the simulation
   struct daa lol;
@@ -193,6 +189,11 @@ void loop() {
   float litVal = lightData(LDR_AO_PIN);
   float smval = sm(SMPIN);
   char* smfeel = smDetermine(SMPIN,DRY);
+
+    if (millis() - lastPubTime > publishInterval){
+        sendMQTT(lol,litVal,smfeel);
+        lastPubTime = millis();
+    }
 }
 
 void connectMQTT() {
