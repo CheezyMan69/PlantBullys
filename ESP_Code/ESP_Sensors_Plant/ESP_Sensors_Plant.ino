@@ -198,7 +198,7 @@ void loop() {
 
 void connectMQTT() {
     mqtt.begin(mqttBroker,mqttPort, network);
-    mqtt.onMessage(messageHandler);
+    // mqtt.onMessage(messageHandler);
     Serial.print("Connecting to Broker");
 
     while (!mqtt.connect(mqttClient)) {
