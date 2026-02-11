@@ -212,13 +212,13 @@ void connectMQTT() {
     return;
     }
 
-    if (mqtt.subscribe(subscribeTopic))
-      Serial.print("Subscribed to the topic: ");
-    else
-      Serial.print("Failed to subscribe to the topic: ");
+    // if (mqtt.subscribe(subscribeTopic))
+    //   Serial.print("Subscribed to the topic: ");
+    // else
+    //   Serial.print("Failed to subscribe to the topic: ");
 
-    Serial.println(subscribeTopic);
-    Serial.println("MQTT broker Connected!");
+    // Serial.println(subscribeTopic);
+    // Serial.println("MQTT broker Connected!");
 }
 
 void sendMQTT(struct daa lol,float lVal,char* smFeel){
@@ -241,9 +241,9 @@ void sendMQTT(struct daa lol,float lVal,char* smFeel){
 
 }
 
-void messageHandler(String &topic, String &payload){
-    Serial.println("Received from MQTT");
-    Serial.println("- topic " + topic);
-    Serial.println("- payload " + payload);
+// void messageHandler(String &topic, String &payload){
+//     Serial.println("Received from MQTT");
+//     Serial.println("- topic " + topic);
+//     Serial.println("- payload " + payload);
     
-}
+// }
