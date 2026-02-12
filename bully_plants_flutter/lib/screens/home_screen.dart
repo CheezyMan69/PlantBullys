@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../database/models/plant.dart';
 import '../database/repositories/plant_repository.dart';
 import 'detail_screen.dart';
+import 'add_plant_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,9 +19,17 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _loadPlants();
+  }
 
-    // Load plants from SQLite
+  void _loadPlants() {
     _plantsFuture = PlantRepository().getAll();
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _loadPlants();
+    });
   }
 
   @override
@@ -31,6 +40,26 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text("My Plants 🌱"),
         centerTitle: true,
+      ),
+
+      // ➕ ADD PLANT BUTTON
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+
+        onPressed: () async {
+
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const AddPlantScreen(),
+            ),
+          );
+
+          // Reload after adding
+          if (result == true) {
+            _refresh();
+          }
+        },
       ),
 
       body: FutureBuilder<List<Plant>>(
@@ -52,56 +81,75 @@ class _HomeScreenState extends State<HomeScreen> {
             return Center(
               child: Text(
                 "Error: ${snapshot.error}",
+                textAlign: TextAlign.center,
               ),
             );
           }
 
-          // No data
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          // Empty
+          if (!snapshot.hasData ||
+              snapshot.data!.isEmpty) {
             return const Center(
-              child: Text("No plants added yet 🌱"),
+              child: Text(
+                "No plants added yet 🌱",
+                style: TextStyle(fontSize: 16),
+              ),
             );
           }
 
           final plants = snapshot.data!;
 
-          return GridView.builder(
+          return RefreshIndicator(
+            onRefresh: _refresh,
 
-            padding: const EdgeInsets.all(12),
+            child: GridView.builder(
 
-            gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.85,
+              padding: const EdgeInsets.all(12),
+
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.85,
+              ),
+
+              itemCount: plants.length,
+
+              itemBuilder: (context, index) {
+
+                final plant = plants[index];
+
+                return _PlantCard(
+
+                  plant: plant,
+
+                  onTap: () async {
+
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            DetailScreen(plant: plant),
+                      ),
+                    );
+
+                    // Reload when returning
+                    _refresh();
+                  },
+                );
+              },
             ),
-
-            itemCount: plants.length,
-
-            itemBuilder: (context, index) {
-
-              final plant = plants[index];
-
-              return _PlantCard(
-                plant: plant,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          DetailScreen(plant: plant),
-                    ),
-                  );
-                },
-              );
-            },
           );
         },
       ),
     );
   }
 }
+
+// --------------------------------------------------
+// PLANT CARD
+// --------------------------------------------------
 
 class _PlantCard extends StatelessWidget {
 
@@ -128,43 +176,64 @@ class _PlantCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
 
+        clipBehavior: Clip.antiAlias,
+
         child: Column(
+
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+
           children: [
 
-            // Plant icon
+            // IMAGE AREA
             Expanded(
               child: Container(
-                width: double.infinity,
 
-                decoration: BoxDecoration(
-                  color: Colors.green[100],
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
-                ),
+                padding: const EdgeInsets.all(12),
+                color: Colors.green[100],
 
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 1,
 
-                  child: Image.asset(
-                    plant.iconPath,
-                    fit: BoxFit.contain,
+                    child: Image.asset(
+
+                      plant.iconPath,
+
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+
+                      // Fallback if image missing
+                      errorBuilder:
+                          (context, error, stack) {
+                        return const Icon(
+                          Icons.local_florist,
+                          size: 40,
+                          color: Colors.green,
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
 
-            // Name
+            // NAME
             Padding(
               padding: const EdgeInsets.all(10),
 
               child: Text(
+
                 plant.plantName,
+
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
+
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

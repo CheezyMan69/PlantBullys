@@ -6,6 +6,7 @@ class SensorReading {
   final double? soilMoisture;
   final double? light;
   final DateTime? recordedAt;
+  
 
   SensorReading({
     this.id,
