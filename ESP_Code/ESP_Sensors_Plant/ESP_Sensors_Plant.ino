@@ -5,9 +5,9 @@
 #include <WiFi.h>
 
 
-#define DHTPIN 34
+#define DHTPIN 32
 #define DHTTYPE DHT11
-#define LDR_AO_PIN 32
+#define LDR_AO_PIN 34
 #define SMPIN 36
 #define DRY 1000
 
@@ -21,7 +21,7 @@ DHT dht(DHTPIN,DHTTYPE);
 const char* ssid = STASSID;
 const char* password = STAPSK;
 
-const char* mqttBroker = "test.mosquitto.org";
+const char* mqttBroker = "iot.coreflux.cloud";
 const int mqttPort = 1883;
 const char mqttClient[] = "bingbong";
 
@@ -206,7 +206,7 @@ void connectMQTT() {
 
     while (!mqtt.connect(mqttClient)) {
     Serial.print(".");
-    delay(100);
+    delay(500);
     }
     Serial.println();
 
