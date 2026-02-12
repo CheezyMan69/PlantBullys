@@ -17,10 +17,10 @@ class MqttService {
      MQTT SETTINGS
   ====================== */
 
-  final String broker = 'test.mosquitto.org';
+  final String broker = 'iot.coreflux.cloud';
   final int port = 1883;
   final String clientId = 'bingbong';
-  final String topic = 'sdata';
+  final String topic = 'bingbong/sdata';
 
   late MqttServerClient _client;
 
@@ -103,12 +103,12 @@ class MqttService {
       final reading = SensorReading(
         plantId: data['plantId'],
         temperature:
-            (data['temperature'] as num?)?.toDouble(),
+            (data['temp'] as num?)?.toDouble(),
         humidity: (data['humidity'] as num?)?.toDouble(),
         soilMoisture:
-            (data['soilMoisture'] as num?)?.toDouble(),
+            (data['soil moisture'] as num?)?.toDouble(),
         light:
-            (data['lightLevel'] as num?)?.toDouble(),
+            (data['light'] as num?)?.toDouble(),
         recordedAt: DateTime.now(),
       );
 
