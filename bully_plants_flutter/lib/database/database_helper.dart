@@ -9,9 +9,6 @@ class DatabaseHelper {
 
   DatabaseHelper._internal();
 
-  // 
-  static const int _dbVersion = 2;
-
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
@@ -24,9 +21,8 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: _dbVersion,
+      version: 1,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade, 
       onConfigure: _onConfigure,
     );
   }
@@ -36,17 +32,14 @@ class DatabaseHelper {
     await db.execute('PRAGMA foreign_keys = ON');
   }
 
-  // Create tables (fresh install)
+  // Create tables
   Future<void> _onCreate(Database db, int version) async {
-
     // Plants table
     await db.execute('''
       CREATE TABLE plants (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         plant_name TEXT NOT NULL,
-
-        icon_path TEXT NOT NULL, --
-
+        icon_path TEXT NOT NULL,
         perenual_id INTEGER,
         min_temperature REAL,
         max_temperature REAL,
@@ -70,10 +63,7 @@ class DatabaseHelper {
         soil_moisture REAL,
         light REAL,
         recorded_at TEXT DEFAULT CURRENT_TIMESTAMP,
-
-        FOREIGN KEY (plant_id) 
-        REFERENCES plants(id) 
-        ON DELETE CASCADE
+        FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE
       )
     ''');
 
@@ -84,33 +74,10 @@ class DatabaseHelper {
     ''');
   }
 
-  Future<void> _onUpgrade(
-    Database db,
-    int oldVersion,
-    int newVersion,
-  ) async {
-
-    if (oldVersion < 2) {
-
-      // Add icon_path column to existing plants table
-      await db.execute('''
-        ALTER TABLE plants 
-        ADD COLUMN icon_path TEXT
-      ''');
-
-      // Optional: Set default icon for old plants
-      await db.execute('''
-        UPDATE plants
-        SET icon_path = 'assets/plants/plant1.png'
-        WHERE icon_path IS NULL
-      ''');
-    }
-  }
-
   // Close database connection
   Future<void> close() async {
     final db = await database;
-    await db.close();
+    db.close();
     _database = null;
   }
 }

@@ -99,6 +99,19 @@ class SensorReadingRepository {
     );
   }
 
+  // Get readings from the last 5 days
+  Future<List<SensorReading>> getLastFiveDays(int plantId) async {
+    final db = await _dbHelper.database;
+    final fiveDaysAgo = DateTime.now().subtract(const Duration(days: 5));
+    final maps = await db.query(
+      'sensor_readings',
+      where: 'plant_id = ? AND recorded_at >= ?',
+      whereArgs: [plantId, fiveDaysAgo.toIso8601String()],
+      orderBy: 'recorded_at ASC',
+    );
+    return maps.map((map) => SensorReading.fromMap(map)).toList();
+  }
+
   // Get average readings for a plant (useful for trends)
   Future<Map<String, double?>> getAverages(int plantId, {int lastNReadings = 10}) async {
     final db = await _dbHelper.database;
@@ -127,20 +140,4 @@ class SensorReadingRepository {
     }
     return {};
   }
-
-Future<List<SensorReading>> getLastFiveDays(int plantId) async {
-  final db = await _dbHelper.database;
-
-  final result = await db.rawQuery('''
-    SELECT *
-    FROM sensor_readings
-    WHERE plant_id = ?
-      AND recorded_at >= datetime('now', '-5 days')
-    ORDER BY recorded_at ASC
-  ''', [plantId]);
-
-  return result
-      .map((e) => SensorReading.fromMap(e))
-      .toList();
-}
 }

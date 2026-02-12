@@ -1,10 +1,7 @@
 class Plant {
   final int? id;
   final String plantName;
-
-  // 
   final String iconPath;
-
   final int? perenualId;
   final double? minTemperature;
   final double? maxTemperature;
@@ -19,8 +16,7 @@ class Plant {
   Plant({
     this.id,
     required this.plantName,
-    required this.iconPath, // 
-
+    required this.iconPath,
     this.perenualId,
     this.minTemperature,
     this.maxTemperature,
@@ -38,10 +34,7 @@ class Plant {
     return {
       'id': id,
       'plant_name': plantName,
-
-      //
       'icon_path': iconPath,
-
       'perenual_id': perenualId,
       'min_temperature': minTemperature,
       'max_temperature': maxTemperature,
@@ -60,20 +53,16 @@ class Plant {
     return Plant(
       id: map['id'] as int?,
       plantName: map['plant_name'] as String,
-
-  
       iconPath: map['icon_path'] as String,
-
       perenualId: map['perenual_id'] as int?,
-      minTemperature: (map['min_temperature'] as num?)?.toDouble(),
-      maxTemperature: (map['max_temperature'] as num?)?.toDouble(),
-      minHumidity: (map['min_humidity'] as num?)?.toDouble(),
-      maxHumidity: (map['max_humidity'] as num?)?.toDouble(),
-      minSoilMoisture: (map['min_soil_moisture'] as num?)?.toDouble(),
-      maxSoilMoisture: (map['max_soil_moisture'] as num?)?.toDouble(),
-      minLight: (map['min_light'] as num?)?.toDouble(),
-      maxLight: (map['max_light'] as num?)?.toDouble(),
-
+      minTemperature: map['min_temperature'] as double?,
+      maxTemperature: map['max_temperature'] as double?,
+      minHumidity: map['min_humidity'] as double?,
+      maxHumidity: map['max_humidity'] as double?,
+      minSoilMoisture: map['min_soil_moisture'] as double?,
+      maxSoilMoisture: map['max_soil_moisture'] as double?,
+      minLight: map['min_light'] as double?,
+      maxLight: map['max_light'] as double?,
       createdAt: map['created_at'] != null
           ? DateTime.parse(map['created_at'] as String)
           : null,
@@ -84,8 +73,7 @@ class Plant {
   Plant copyWith({
     int? id,
     String? plantName,
-    String? iconPath, // ✅
-
+    String? iconPath,
     int? perenualId,
     double? minTemperature,
     double? maxTemperature,
@@ -100,10 +88,7 @@ class Plant {
     return Plant(
       id: id ?? this.id,
       plantName: plantName ?? this.plantName,
-
-      // 
       iconPath: iconPath ?? this.iconPath,
-
       perenualId: perenualId ?? this.perenualId,
       minTemperature: minTemperature ?? this.minTemperature,
       maxTemperature: maxTemperature ?? this.maxTemperature,
