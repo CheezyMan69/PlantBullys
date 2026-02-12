@@ -56,7 +56,7 @@ class _AddPlantScreenState
   );
 
   await PlantRepository().insert(plant);
-  await DebugPrint.printAllPlants(); 
+  await DebugPrint.printAll();
   
   Navigator.pop(context, true);
 }

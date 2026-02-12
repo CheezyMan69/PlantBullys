@@ -9,7 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await NotificationService.init();
-  await MqttService().connect();
+  await MQTTService().connect();
 
   runApp(MyApp());
 }
