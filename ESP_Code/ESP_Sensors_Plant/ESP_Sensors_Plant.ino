@@ -227,7 +227,7 @@ void connectMQTT() {
 void sendMQTT(struct daa lol,float lVal,float smVal){
     StaticJsonDocument<200> middlefinger;
     middlefinger["timestamp"] = millis();
-    middlefinger["plantId"] = 1;
+    middlefinger["plantId"] = 9;
     middlefinger["temp"] = lol.t;
     middlefinger["humidity"] = lol.h;
     middlefinger["light"] = lVal;

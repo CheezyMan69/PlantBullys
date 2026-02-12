@@ -121,21 +121,72 @@ class _HomeScreenState extends State<HomeScreen> {
                 final plant = plants[index];
 
                 return _PlantCard(
-
                   plant: plant,
 
                   onTap: () async {
-
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            DetailScreen(plant: plant),
+                        builder: (_) => DetailScreen(plant: plant),
+                      ),
+                    );
+                    _refresh();
+                  },
+
+                  onDelete: () async {
+
+                    if (plant.id == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Cannot delete plant: invalid ID'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Delete Plant"),
+                        content: Text(
+                          'Are you sure you want to delete "${plant.plantName}"?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                            child: const Text("Delete"),
+                          ),
+                        ],
                       ),
                     );
 
-                    // Reload when returning
-                    _refresh();
+                    if (confirm != true) return;
+
+                    final rowsDeleted =
+                    await PlantRepository().deleteById(plant.id!);
+
+                    if (rowsDeleted > 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content:
+                          Text('"${plant.plantName}" deleted successfully'),
+                        ),
+                      );
+                      _refresh();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Delete failed.'),
+                        ),
+                      );
+                    }
                   },
                 );
               },
@@ -152,91 +203,113 @@ class _HomeScreenState extends State<HomeScreen> {
 // --------------------------------------------------
 
 class _PlantCard extends StatelessWidget {
-
   final Plant plant;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   const _PlantCard({
     required this.plant,
     required this.onTap,
+    required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
 
-    return GestureDetector(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
 
-      onTap: onTap,
+        child: Card(
+          elevation: 3,
 
-      child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
 
-        elevation: 3,
+          clipBehavior: Clip.antiAlias,
 
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
 
-        clipBehavior: Clip.antiAlias,
+              // IMAGE
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  color: Colors.green[100],
 
-        child: Column(
+                  child: Center(
+                    child: AspectRatio(
+                      aspectRatio: 1,
 
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+                      child: Image.asset(
+                        plant.iconPath,
 
-          children: [
+                        fit: BoxFit.contain,
 
-            // IMAGE AREA
-            Expanded(
-              child: Container(
-
-                padding: const EdgeInsets.all(12),
-                color: Colors.green[100],
-
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio: 1,
-
-                    child: Image.asset(
-
-                      plant.iconPath,
-
-                      fit: BoxFit.contain,
-                      width: double.infinity,
-                      height: double.infinity,
-
-                      // Fallback if image missing
-                      errorBuilder:
-                          (context, error, stack) {
-                        return const Icon(
-                          Icons.local_florist,
-                          size: 40,
-                          color: Colors.green,
-                        );
-                      },
+                        errorBuilder:
+                            (context, error, stack) {
+                          return const Icon(
+                            Icons.local_florist,
+                            size: 40,
+                            color: Colors.green,
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // NAME
-            Padding(
-              padding: const EdgeInsets.all(10),
+              // NAME
+              Padding(
+                padding:
+                const EdgeInsets.fromLTRB(10, 10, 10, 4),
 
-              child: Text(
+                child: Text(
+                  plant.plantName,
 
-                plant.plantName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
 
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+
+              // DELETE BUTTON (still clickable)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+
+                child: Center(
+                  child: TextButton.icon(
+                    onPressed: onDelete,
+
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                    ),
+
+                    label: const Text("Delete"),
+
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      minimumSize: const Size(0, 32),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
