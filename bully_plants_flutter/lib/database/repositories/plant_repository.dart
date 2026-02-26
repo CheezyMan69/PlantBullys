@@ -49,7 +49,7 @@ class PlantRepository {
   }
 
   // Delete a plant
-  Future<int> delete(int id) async {
+  Future<int> deleteById(int id) async {
     final db = await _dbHelper.database;
     return await db.delete(
       'plants',
@@ -57,6 +57,7 @@ class PlantRepository {
       whereArgs: [id],
     );
   }
+
 
   // Search plants by name
   Future<List<Plant>> searchByName(String query) async {

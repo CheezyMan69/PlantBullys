@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../database/models/plant.dart';
 import '../database/repositories/plant_repository.dart';
 import '../screens/icon_picker.dart';
-import '../debug/seed_data.dart'
+import '../debug/print_data.dart';
 
 class AddPlantScreen extends StatefulWidget {
   const AddPlantScreen({super.key});
@@ -55,36 +55,10 @@ class _AddPlantScreenState
     createdAt: DateTime.now(),
   );
 
-  try {
-    final plantId = await PlantRepository().insert(plant);
-
-    if (plantId > 0) {
-      await SeedData.insertFakeReadings(plantId, count: 20);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Plant saved! ID: $plantId'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      Navigator.pop(context, true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to save plant'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error: $e'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
+  await PlantRepository().insert(plant);
+  await DebugPrint.printAll();
+  
+  Navigator.pop(context, true);
 }
 
   @override
